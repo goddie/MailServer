@@ -23,7 +23,6 @@ import javax.mail.Store;
 import javax.mail.URLName;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
- 
 
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPStore;
@@ -38,8 +37,22 @@ public class MailUtil {
 	 * 协议 服务器地址 服务器端口号（常规） 服务器端口号（加密） POP3 pop3.mxhichina.com 110 995 SMTP
 	 * smtp.mxhichina.com 25 465 IMAP imap.mxhichina.com 143 993
 	 */
-	private static String user = "goddie@meowpaw.com";
-	private static String pwd = "BBBbbb222";
+//	 private static String imapServer = "imap.mxhichina.com";
+//	 private static int imapPort = 143;
+//	 private static String pop3Server = "pop3.mxhichina.com";
+//	 private static int pop3Port = 110;
+//
+//	 private static String user = "goddie@meowpaw.com";
+//	 private static String pwd = "BBBbbb222";
+
+	private static String imapServer = "imap.aliyun.com";
+	private static int imapPort = 143;
+	private static String pop3Server = "pop3.aliyun.com";
+	private static int pop3Port = 110;
+
+	private static String user = "meowlog@aliyun.com";
+	private static String pwd = "log2015";
+
 	private static Boolean ssl = true;
 
 	void init() {
@@ -52,13 +65,13 @@ public class MailUtil {
 	public static void storeMails() {
 
 		Properties props = new Properties();
-//		if (ssl) {
-//			// 使用ssl才要加
-//			Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-//			props.setProperty("mail.pop3.socketFactory.class",
-//					"javax.net.ssl.SSLSocketFactory");
-//			props.setProperty("mail.pop3.socketFactory.fallback", "false");
-//		}
+		// if (ssl) {
+		// // 使用ssl才要加
+		// Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+		// props.setProperty("mail.pop3.socketFactory.class",
+		// "javax.net.ssl.SSLSocketFactory");
+		// props.setProperty("mail.pop3.socketFactory.fallback", "false");
+		// }
 
 		Session session = Session.getDefaultInstance(props, null);
 		session.setDebug(true);
@@ -109,10 +122,10 @@ public class MailUtil {
 	 * @return
 	 */
 	public static Set<Long> getAllUID() {
-		String imapserver = "imap.mxhichina.com"; // 邮件服务器
+
 		// 获取默认会话
 		Properties prop = System.getProperties();
-		prop.put("mail.imap.host", imapserver);
+		prop.put("mail.imap.host", imapServer);
 		prop.put("mail.imap.auth.plain.disable", "true");
 
 		Session mailsession = Session.getInstance(prop, null);
@@ -124,7 +137,7 @@ public class MailUtil {
 
 		try {
 			store = (IMAPStore) mailsession.getStore("imap"); // 使用imap会话机制，连接服务器
-			store.connect(imapserver, user, pwd);
+			store.connect(imapServer, user, pwd);
 			folder = (IMAPFolder) store.getFolder("INBOX"); // 收件箱
 			// 使用只读方式打开收件箱
 			folder.open(Folder.READ_WRITE);
@@ -177,10 +190,9 @@ public class MailUtil {
 	 * @return
 	 */
 	public static void storeMailInFolder(Set<Long> uids) {
-		String imapserver = "imap.mxhichina.com"; // 邮件服务器
 		// 获取默认会话
 		Properties prop = System.getProperties();
-		prop.put("mail.imap.host", imapserver);
+		prop.put("mail.imap.host", imapServer);
 		prop.put("mail.imap.auth.plain.disable", "true");
 
 		Session mailsession = Session.getInstance(prop, null);
@@ -190,7 +202,7 @@ public class MailUtil {
 
 		try {
 			store = (IMAPStore) mailsession.getStore("imap"); // 使用imap会话机制，连接服务器
-			store.connect(imapserver, user, pwd);
+			store.connect(imapServer, user, pwd);
 			folder = (IMAPFolder) store.getFolder("INBOX"); // 收件箱
 			// 使用只读方式打开收件箱
 			folder.open(Folder.READ_WRITE);
@@ -213,12 +225,10 @@ public class MailUtil {
 			//
 			// }
 			// });
-			
+
 			for (int i = 0; i < messages.length; i++) {
 				saveFile(messages[i]);
 			}
-			
-			
 
 			// try {
 			// for (int i = 0; i < n.length; i++) {
@@ -245,6 +255,11 @@ public class MailUtil {
 
 	}
 
+	/**
+	 * 将Message保存成html网页 用户名/日期月份/日志html
+	 * 
+	 * @param message
+	 */
 	public static void saveFile(Message message) {
 
 		try {
@@ -256,9 +271,20 @@ public class MailUtil {
 
 			sb.append(System.getProperty("user.dir"));
 			sb.append(System.getProperty("file.separator"));
+			sb.append("Web");
+			sb.append(System.getProperty("file.separator"));
 			sb.append("MailBox");
 			sb.append(System.getProperty("file.separator"));
-			sb.append(address[0].getPersonal());
+
+			String name = address[0].getAddress();
+
+			if (name.indexOf("@") > 0) {
+
+				name = name.substring(0, name.lastIndexOf('@'));
+			}
+
+			sb.append(name);
+
 			sb.append(System.getProperty("file.separator"));
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMM");
 			sb.append(sdf.format(message.getSentDate()));
@@ -279,20 +305,26 @@ public class MailUtil {
 			System.out.println(sb.toString());
 
 			SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd");
-			
-			
+
 			sb.append(System.getProperty("file.separator"));
 			sb.append(sdf2.format(message.getSentDate()));
+			sb.append("_");
 			sb.append(message.getSubject().replace("/", ""));
 			sb.append(".html");
 
 			File file2 = new File(sb.toString());
 
 			StringBuffer content = new StringBuffer();
-			getMailTextContent((Part) message, content);
-			saveHTML(file2, content.toString());
+			getMailTextMultipart((Part) message, content);
 
-			System.out.println(content.toString());
+			//使用模板把邮件内容放进去
+			String contentTemplate = FileUtil.getInstance().getTempHash().get("content.html");
+			contentTemplate = contentTemplate.replace("#title#", "");
+			contentTemplate = contentTemplate.replace("#content#", content);
+			
+			FileUtil.getInstance().saveHTML(file2, contentTemplate);
+
+			//System.out.println(content.toString());
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -332,25 +364,29 @@ public class MailUtil {
 		}
 
 	}
+	
+	/**
+	 * 只获取多媒体邮件
+	 * 
+	 * @param part
+	 *            邮件体
+	 * @param content
+	 *            存储邮件文本内容的字符串
+	 * @throws MessagingException
+	 * @throws IOException
+	 */
+	public static void getMailTextMultipart(Part part, StringBuffer content) {
 
-	public static void saveHTML(File file, String content) throws Exception {
-		/**
-		 * 创建一个可以往文件中写入字符数据的字符流输出流对象 创建时必须明确文件的目的地 如果文件不存在，这回自动创建。如果文件存在，则会覆盖。
-		 * 当路径错误时会抛异常
-		 * 
-		 * 当在创建时加入true参数，回实现对文件的续写。
-		 */
-		FileWriter fw = new FileWriter(file);
-
-		fw.write(content);
-		/**
-		 * 进行刷新，将字符写到目的地中。
-		 */
-		// fw.flush();
-		/**
-		 * 关闭流，关闭资源。在关闭前会调用flush方法 刷新缓冲区。关闭后在写的话，会抛IOException
-		 */
-		fw.close();
+		try {
+			if (part.isMimeType("multipart/*")) {
+				Multipart multipart = (Multipart) part.getContent();
+				int partCount = multipart.getCount();
+				BodyPart bodyPart = multipart.getBodyPart(partCount-1);
+				content.append(bodyPart.getContent());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
