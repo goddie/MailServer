@@ -3,8 +3,11 @@ package com.meowpaw.mailserver;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URLEncoder;
 import java.util.Hashtable;
 
 public class FileUtil {
@@ -78,9 +81,23 @@ public class FileUtil {
 		 * 
 		 * 当在创建时加入true参数，回实现对文件的续写。
 		 */
-		FileWriter fw = new FileWriter(file);
-
-		fw.write(content);
+		
+		
+		FileOutputStream fos=new FileOutputStream(file);
+		
+		OutputStreamWriter osw=new OutputStreamWriter(fos,"UTF-8");
+		
+		osw.write(content);
+		
+		
+		osw.close();
+		fos.close();
+		
+//		FileWriter fw = new FileWriter(file);
+//
+//		String utf8Content = new String(content.getBytes("GBK"),"UTF-8");
+//
+//		fw.write(utf8Content);
 		/**
 		 * 进行刷新，将字符写到目的地中。
 		 */
@@ -88,7 +105,7 @@ public class FileUtil {
 		/**
 		 * 关闭流，关闭资源。在关闭前会调用flush方法 刷新缓冲区。关闭后在写的话，会抛IOException
 		 */
-		fw.close();
+//		fw.close();
 
 	}
 
