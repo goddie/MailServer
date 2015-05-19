@@ -8,7 +8,12 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 public class FileUtil {
 
@@ -112,6 +117,13 @@ public class FileUtil {
 	 */
 	public void genIndex() {
 
+		List<NameList> nameLists = getNameList();
+		
+		Hashtable<String, NameList> ht=new Hashtable<String, NameList>();
+		
+		
+		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append(System.getProperty("user.dir"));
 		sb.append(System.getProperty("file.separator"));
@@ -120,7 +132,19 @@ public class FileUtil {
 		sb.append("MailBox");
 
 		File root = new File(sb.toString());
-		File[] filesName = root.listFiles();
+
+		// File[] filesName = root.listFiles();
+
+		List<File> filesName = new ArrayList<File>();
+
+		for (NameList nl : nameLists) {
+			String pp = sb.toString() + System.getProperty("file.separator")
+					+ nl.email;
+			File f = new File(pp);
+			filesName.add(f);
+			
+			ht.put(nl.email, nl);
+		}
 
 		StringBuilder sbTree = new StringBuilder();
 
@@ -131,7 +155,8 @@ public class FileUtil {
 				}
 
 				sbTree.append("<li>");
-				sbTree.append(name.getName());
+				//sbTree.append(name.getName());
+				sbTree.append(ht.get(name.getName()).getName());
 
 				File[] filesDate = name.listFiles();
 
@@ -151,8 +176,8 @@ public class FileUtil {
 					sbTree.append("<ul>");
 					for (File report : filesReport) { // 日志文件
 
-						String relLink = "MailBox/" + name.getName() + "/" + date.getName() + "/"
-								+ report.getName();
+						String relLink = "MailBox/" + name.getName() + "/"
+								+ date.getName() + "/" + report.getName();
 
 						sbTree.append("<li>");
 						sbTree.append("<a href=\"");
@@ -189,6 +214,104 @@ public class FileUtil {
 		} catch (Exception e) {
 
 			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * 获取姓名配置
+	 * 
+	 * @return
+	 */
+	public List<NameList> getNameList() {
+
+		List<NameList> list = new ArrayList<NameList>();
+
+		try {
+			// 从namelist文件里面读取出邮件前缀和姓名关联
+			String nameListPath = System.getProperty("user.dir")
+					+ System.getProperty("file.separator") + "Web"
+					+ System.getProperty("file.separator") + "NameList.txt";
+			File nameList = new File(nameListPath);
+
+			FileInputStream in = new FileInputStream(nameList);
+			byte b[] = new byte[(int) nameList.length()]; // 创建合适文件大小的数组
+			in.read(b); // 读取文件中的内容到b[]数组
+			in.close();
+
+			String text = new String(b, "UTF-8");
+			
+			text = text.replace(System.getProperty("line.separator"), "");
+			
+			String[] names = text.split(";");
+
+			for (int i = 0; i < names.length; i++) {
+
+				String[] items = names[i].split(",");
+
+				NameList nl = new NameList();
+
+				nl.setEmail(items[0]);
+				nl.setName(items[1]);
+				nl.setDept(items[2]);
+
+				list.add(nl);
+			}
+
+			// System.out.println(list.get(0).getName());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return list;
+	}
+
+	/**
+	 * 姓名配置
+	 * 
+	 * @author goddie
+	 *
+	 */
+	class NameList {
+
+		/**
+		 * 姓名
+		 */
+		private String name;
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		/**
+		 * 邮箱前缀
+		 */
+		private String email;
+
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}
+
+		/**
+		 * 邮箱前缀
+		 */
+		private String dept;
+
+		public String getDept() {
+			return dept;
+		}
+
+		public void setDept(String dept) {
+			this.dept = dept;
 		}
 
 	}

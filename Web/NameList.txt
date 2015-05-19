@@ -1,0 +1,5 @@
+goddie,彭静,程序部;
+wangbingbing,王冰冰,程序部;
+zhangq,张勤,产品部;
+ironmask,李国锋,美术部;
+samule,神父,项目一部负责;
